@@ -26,7 +26,7 @@ const app = require('./app');
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
+  console.log(`Open Desk API listening on port ${port}!`);
 });
 
 process.on('unhandledRejection', (err) => {
