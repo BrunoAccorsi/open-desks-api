@@ -1,7 +1,65 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const Workspace = require('../models/workspaceModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/img/workspaces');
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype.split('/')[1];
+    cb(null, `workspace-${req.params.id}-${Date.now()}.${ext}`);
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadWorkspaceImage = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
+
+exports.resizeWorkspaceImages = async (req, res, next) => {
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  req.body.imageCover = `workspace-${req.params.id}-${Date.now()}-cover.jpeg`;
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/workspaces/${req.body.imageCover}`);
+
+  req.body.images = [];
+  await Promise.all(
+    req.files.images.map(async (file, index) => {
+      const fileName = `workspace-${req.params.id}-${Date.now()}-${index + 1}.jpeg`;
+
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/workspaces/${fileName}`);
+
+      req.body.images.push(fileName);
+    }),
+  );
+
+  next();
+};
 
 exports.getAllWorkspaces = catchAsync(async (req, res, next) => {
   const features = new APIFeatures(Workspace.find(), req.query)
@@ -47,6 +105,7 @@ exports.createWorkspace = catchAsync(async (req, res, next) => {
 });
 
 exports.updateWorkspace = catchAsync(async (req, res, next) => {
+  if (req.file) req.body.imageCover = req.file.filename;
   const workspace = await Workspace.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,

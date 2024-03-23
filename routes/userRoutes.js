@@ -7,17 +7,24 @@ const router = express.Router();
 router.post('/signup', authController.signUp);
 router.post('/login', authController.login);
 
-router.patch('/update', authController.protect, userController.updateUser);
-router.delete('/delete', authController.protect, userController.deleteUser);
+// Protect (require login) all routes after this middleware
+router.use(authController.protect);
+
+router.patch('/update', userController.updateUser);
+router.delete('/delete', userController.deleteUser);
 
 router
   .route('/')
-  .get(authController.protect, userController.getAllUsers)
+  .get(userController.getAllUsers)
   .post(userController.createUser);
 router
   .route('/:id')
   .get(userController.getUser)
-  .patch(userController.updateUser)
+  .patch(
+    userController.uploadUserPhoto,
+    userController.resizeUserPhoto,
+    userController.updateUser,
+  )
   .delete(userController.deleteUser);
 
 module.exports = router;

@@ -11,7 +11,12 @@ router
 router
   .route('/:id')
   .get(authController.protect, workspaceController.getWorkspace)
-  .patch(authController.protect, workspaceController.updateWorkspace)
+  .patch(
+    authController.protect,
+    workspaceController.uploadWorkspaceImage,
+    workspaceController.resizeWorkspaceImages,
+    workspaceController.updateWorkspace,
+  )
   .delete(
     authController.protect,
     authController.restricTo('admin', 'onwer'),

@@ -45,7 +45,7 @@ const workspaceSchema = new mongoose.Schema(
     },
     imageCover: {
       type: String,
-      required: [true, 'A workspace must have an image cover'],
+      default: 'user-default.jpg',
     },
     images: [String],
     createdAt: {

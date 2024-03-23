@@ -1,6 +1,23 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
 
 const filterObj = (obj, ...allowedFields) => {
   Object.keys(obj).forEach((key) => {
@@ -10,6 +27,22 @@ const filterObj = (obj, ...allowedFields) => {
     }
   });
 };
+
+exports.uploadUserPhoto = upload.single('photo');
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.fileName = `workspace-${req.params.id}-${Date.now()}.jpeg`;
+
+  //this lib handles images processing
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.fileName}`);
+
+  next();
+});
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -38,6 +71,9 @@ exports.updateUsers = catchAsync(async (req, res, next) => {
 
   //filter out unwanted fields from the request body
   const filteredBody = filterObj(req.body, ['name', 'email', 'photo']);
+
+  if (req.file) req.body.photo = req.file.filename;
+
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,
