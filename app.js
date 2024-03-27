@@ -5,7 +5,9 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cors = require('cors');
 
+const cookieParser = require('cookie-parser');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const propertyRouter = require('./routes/propertyRoutes');
@@ -14,6 +16,11 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
+const corsOptions = {
+  origin: 'http://127.0.0.1:5500', // Set to your front-end application's origin
+  credentials: true, // Needed for cookies
+};
+app.use(cors(corsOptions));
 //set security headers
 app.use(helmet());
 
@@ -32,6 +39,8 @@ app.use('/api', limiter);
 
 //body parser
 app.use(express.json({ limit: '10kb' }));
+//parse the data from cookies
+app.use(cookieParser());
 
 //data sanitization against noSQL injection
 app.use(mongoSanitize());

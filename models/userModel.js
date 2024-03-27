@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['coworker', 'onwer', 'admin'],
+    enum: ['coworker', 'owner', 'admin'],
     default: 'coworker',
   },
   password: {
@@ -37,17 +37,17 @@ const userSchema = new mongoose.Schema({
     minLength: [8, 'A User password must be at least 8 characters'],
     select: false,
   },
-  passwordConfirmation: {
-    type: String,
-    required: [true, 'Please confirm your password'],
-    validate: {
-      validator: function (el) {
-        // This only works on CREATE and SAVE!!!
-        return el === this.password;
-      },
-      message: 'Passwords are not the same!',
-    },
-  },
+  // passwordConfirmation: {
+  //   type: String,
+  //   required: [true, 'Please confirm your password'],
+  //   validate: {
+  //     validator: function (el) {
+  //       // This only works on CREATE and SAVE!!!
+  //       return el === this.password;
+  //     },
+  //     message: 'Passwords are not the same!',
+  //   },
+  // },
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
