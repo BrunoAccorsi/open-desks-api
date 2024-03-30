@@ -13,8 +13,8 @@ router
   .get(authController.protect, workspaceController.getWorkspace)
   .patch(
     authController.protect,
-    workspaceController.uploadWorkspaceImage,
-    workspaceController.resizeWorkspaceImages,
+    // workspaceController.uploadWorkspaceImage,
+    // workspaceController.resizeWorkspaceImages,
     workspaceController.updateWorkspace,
   )
   .delete(

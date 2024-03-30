@@ -24,6 +24,17 @@ const workspaceSchema = new mongoose.Schema(
       default: 'coworker',
       required: true,
     },
+    price: Number,
+    bookedDates: [
+      {
+        startDate: Date,
+        endDate: Date,
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      },
+    ],
     leaseTermType: {
       type: String,
       enum: ['days', 'weeks', 'months'],

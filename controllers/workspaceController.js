@@ -86,10 +86,23 @@ exports.getWorkspace = catchAsync(async (req, res, next) => {
     return next(new AppError('Workspace not found', 404));
   }
 
+  const unavailableDates = [];
+  workspace.bookedDates.forEach((bookedDate) => {
+    const startDate = moment(bookedDate.startDate);
+    const endDate = moment(bookedDate.endDate);
+    const datesInRange = [];
+    while (startDate.isSameOrBefore(endDate)) {
+      datesInRange.push(startDate.format('YYYY-MM-DD'));
+      startDate.add(1, 'day');
+    }
+    unavailableDates.push(...datesInRange);
+  });
+
   res.status(200).json({
     status: 'success',
     data: {
       workspace,
+      unavailableDates,
     },
   });
 });
@@ -155,20 +168,25 @@ exports.rentWorkspace = catchAsync(async (req, res, next) => {
   // Check if the endDate intersects with another bookedDate
   const intersectingDates = workspace.bookedDates.filter(
     (bookedDate) =>
-      startDate.isBetween(
+      moment(startDate).isBetween(
         bookedDate.startDate,
         bookedDate.endDate,
         undefined,
         '[]',
       ) ||
-      endDate.isBetween(
+      moment(endDate).isBetween(
         bookedDate.startDate,
         bookedDate.endDate,
         undefined,
         '[]',
       ) ||
-      bookedDate.startDate.isBetween(startDate, endDate, undefined, '[]') ||
-      bookedDate.endDate.isBetween(startDate, endDate, undefined, '[]'),
+      moment(bookedDate.startDate).isBetween(
+        startDate,
+        endDate,
+        undefined,
+        '[]',
+      ) ||
+      moment(bookedDate.endDate).isBetween(startDate, endDate, undefined, '[]'),
   );
 
   if (intersectingDates.length > 0) {
@@ -180,7 +198,11 @@ exports.rentWorkspace = catchAsync(async (req, res, next) => {
     );
   }
 
-  workspace.bookedDates.push({ startDate, endDate, userId: req.user.id });
+  workspace.bookedDates.push({
+    startDate: startDate.toDate(),
+    endDate: endDate.toDate(),
+    userId: req.user.id,
+  });
   await workspace.save({ validateBeforeSave: false });
 
   res.status(200).json({

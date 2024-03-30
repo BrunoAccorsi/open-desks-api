@@ -1,7 +1,9 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
+const Workspace = require('../models/workspaceModel');
 const AppError = require('../utils/appError');
 
 const multerStorage = multer.memoryStorage();
@@ -105,5 +107,46 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   res.status(204).json({
     status: 'success',
     data: null,
+  });
+});
+
+exports.getRentedWorkspaces = catchAsync(async (req, res, next) => {
+  const rentedWorkspaces = await Workspace.aggregate([
+    { $unwind: '$bookedDates' },
+    { $match: { 'bookedDates.userId': mongoose.Types.ObjectId(req.user.id) } },
+    {
+      $group: {
+        _id: '$_id',
+        doc: { $first: '$$ROOT' },
+        bookedDates: { $push: '$bookedDates' },
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ['$$ROOT.doc', { bookedDates: '$bookedDates' }],
+        },
+      },
+    },
+  ]);
+
+  if (!rentedWorkspaces.length) {
+    return next(new AppError('No rented workspaces found', 404));
+  }
+
+  const data = rentedWorkspaces.flatMap((workspace) =>
+    workspace.bookedDates.map((date) => ({
+      id: workspace._id,
+      startDate: date.startDate,
+      endDate: date.endDate,
+      leaseTermType: workspace.leaseTermType,
+      seatingCapacity: workspace.seatingCapacity,
+      workspaceType: workspace.workspaceType,
+    })),
+  );
+
+  res.status(200).json({
+    status: 'success',
+    data: data,
   });
 });
