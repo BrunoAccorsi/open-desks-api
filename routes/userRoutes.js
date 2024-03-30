@@ -10,8 +10,12 @@ router.post('/login', authController.login);
 // Protect (require login) all routes after this middleware
 router.use(authController.protect);
 
+router.post('/logout', authController.logout);
+
 router.patch('/update', userController.updateUser);
 router.delete('/delete', userController.deleteUser);
+
+router.get('/my-bookings', userController.getRentedWorkspaces);
 
 router
   .route('/')

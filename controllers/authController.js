@@ -66,6 +66,24 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.logout = (req, res) => {
+  // Overwrite the JWT cookie with a new, expired one to effectively "clear" it.
+  const cookieOptions = {
+    expires: new Date(Date.now() + 10 * 1000), // Set the cookie to expire in 10 seconds
+    httpOnly: true,
+  };
+
+  // Ensure the cookie is set to be secure in production environments
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', 'loggedout', cookieOptions);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'You have been successfully logged out.',
+  });
+};
+
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (

@@ -22,5 +22,8 @@ router
     authController.restricTo('admin', 'onwer'),
     workspaceController.deleteWorkspace,
   );
+router
+  .route('/:id/rent')
+  .post(authController.protect, workspaceController.rentWorkspace);
 
 module.exports = router;

@@ -26,7 +26,7 @@ const workspaceSchema = new mongoose.Schema(
     },
     leaseTermType: {
       type: String,
-      enum: ['day', 'week', 'month'],
+      enum: ['days', 'weeks', 'months'],
       default: 'coworker',
       required: true,
     },

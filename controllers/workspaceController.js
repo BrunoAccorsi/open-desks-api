@@ -1,5 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const moment = require('moment');
 const Workspace = require('../models/workspaceModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
@@ -136,86 +137,101 @@ exports.deleteWorkspace = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getWorkspacetats = catchAsync(async (req, res, next) => {
-  const stats = await Workspace.aggregate([
-    {
-      $match: {
-        ratingsAverage: {
-          $gte: 4.5,
-        },
-      },
-    },
-    {
-      $group: {
-        _id: { $toUpper: '$difficulty' },
-        num: { $sum: 1 },
-        numRatings: { $sum: '$ratingsQuantity' },
-        averageRating: { $avg: '$ratingsAverage' },
-        averagePrice: { $avg: '$price' },
-        minPrice: { $min: '$price' },
-        maxPrice: { $max: '$price' },
-      },
-    },
-    {
-      $sort: { avgPrice: 1 },
-    },
-    // {
-    //   $match: { _id: { $ne: 'EASY' } },
-    // },
-  ]);
+exports.rentWorkspace = catchAsync(async (req, res, next) => {
+  const workspace = await Workspace.findById(req.params.id);
+
+  if (!workspace) {
+    return next(new AppError('Workspace not found', 404));
+  }
+
+  const startDate = moment(req.body.start, 'YYYY-MM-DD');
+  const endDate = moment(startDate).add(
+    req.body.quantity,
+    workspace.leaseTermType,
+  );
+
+  const totalPrice = workspace.price * req.body.quantity;
+
+  // Check if the endDate intersects with another bookedDate
+  const intersectingDates = workspace.bookedDates.filter(
+    (bookedDate) =>
+      startDate.isBetween(
+        bookedDate.startDate,
+        bookedDate.endDate,
+        undefined,
+        '[]',
+      ) ||
+      endDate.isBetween(
+        bookedDate.startDate,
+        bookedDate.endDate,
+        undefined,
+        '[]',
+      ) ||
+      bookedDate.startDate.isBetween(startDate, endDate, undefined, '[]') ||
+      bookedDate.endDate.isBetween(startDate, endDate, undefined, '[]'),
+  );
+
+  if (intersectingDates.length > 0) {
+    return next(
+      new AppError(
+        'The selected dates are not available. Please choose different dates.',
+        400,
+      ),
+    );
+  }
+
+  workspace.bookedDates.push({ startDate, endDate, userId: req.user.id });
+  await workspace.save({ validateBeforeSave: false });
 
   res.status(200).json({
     status: 'success',
     data: {
-      stats,
+      startDate,
+      endDate,
+      totalPrice,
+      leaseTermType: workspace.leaseTermType,
+      seatingCapacity: workspace.seatingCapacity,
+      workspaceType: workspace.workspaceType,
     },
   });
 });
 
-exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
-  const year = parseInt(req.params.year, 10);
-
-  const plan = await Workspace.aggregate([
-    {
-      $unwind: '$startDates',
-    },
-    {
-      $match: {
-        startDates: {
-          $gte: new Date(`${year}-01-01`),
-          $lte: new Date(`${year}-12-31`),
-        },
-      },
-    },
+exports.getRentedWorkspaces = catchAsync(async (req, res, next) => {
+  // match the userId with the requesting user's ID, and then group the results back.
+  const rentedWorkspaces = await Workspace.aggregate([
+    { $unwind: '$bookedDates' }, // Split the document per bookedDate entry
+    { $match: { 'bookedDates.userId': req.user.id } }, // Find entries where bookedDates.userId matches the user's ID
     {
       $group: {
-        _id: {
-          $month: '$startDates',
+        _id: '$_id', // Group by the workspace ID to recombine the entries
+        doc: { $first: '$$ROOT' }, // Use the first document as the root
+        bookedDates: { $push: '$bookedDates' }, // Push matched bookedDates into an array
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ['$$ROOT.doc', { bookedDates: '$bookedDates' }],
         },
-        numWorkspaceStarts: { $sum: 1 },
-        Workspace: { $push: '$name' },
       },
-    },
-    {
-      $addFields: { month: '$_id' },
-    },
-    {
-      $project: {
-        _id: 0,
-      },
-    },
-    {
-      $sort: { numWorkspaceStarts: -1 },
-    },
-    {
-      $limit: 12,
     },
   ]);
 
+  if (!rentedWorkspaces.length) {
+    return next(new AppError('No rented workspaces found', 404));
+  }
+
+  const data = rentedWorkspaces.map((workspace) => ({
+    id: workspace._id,
+    startDate: workspace.bookedDates.map((date) => date.startDate),
+    endDate: workspace.bookedDates.map((date) => date.endDate),
+    leaseTermType: workspace.leaseTermType,
+    seatingCapacity: workspace.seatingCapacity,
+    workspaceType: workspace.workspaceType,
+  }));
+
   res.status(200).json({
     status: 'success',
-    data: {
-      plan,
-    },
+    data: data,
   });
 });
