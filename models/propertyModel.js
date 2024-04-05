@@ -5,13 +5,17 @@ const { Schema } = mongoose;
 
 const propertySchema = new mongoose.Schema(
   {
-    name: {
+    buildingName: {
       type: String,
       required: [true, 'A property must have a name'],
       unique: true,
       trim: true,
       maxLength: [40, 'A property name cannot be more than 40 characters'],
-      minLength: [10, 'A property name cannot be less than 10 characters'],
+      minLength: [5, 'A property name cannot be less than 5 characters'],
+    },
+    workspaceTypes: {
+      type: [String],
+      enum: ['desk', 'meeting_room', 'private_office'],
     },
     ownerId: {
       type: Schema.Types.ObjectId,
@@ -22,32 +26,30 @@ const propertySchema = new mongoose.Schema(
       type: String,
       required: [true, 'A property must have a address'],
     },
-    neibornhood: {
+    neighborhood: {
       type: String,
-      required: [true, 'A property must have a neibornhood'],
+      required: [true, 'A property must have a neighborhood'],
     },
-    parkingAvailability: {
+    hasParkingGarage: {
       type: Boolean,
       default: false,
     },
-    publicTransitAvailability: {
+    hasPublicTransportNearBy: {
       type: Boolean,
       default: false,
     },
-    imageCover: {
+    image: {
       type: String,
       required: [true, 'A property must have an image cover'],
     },
-    images: [String],
+    squareFeet: {
+      type: Number,
+      required: [true, 'A property must have a square feet'],
+    },
     createdAt: {
       type: Date,
       default: Date.now(),
       select: false,
-    },
-    startDates: [Date],
-    secretproperty: {
-      type: Boolean,
-      default: false,
     },
   },
   {

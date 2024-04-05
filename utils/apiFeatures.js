@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 class APIFeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -8,9 +10,19 @@ class APIFeatures {
     // Copying the query string
     const queryObj = { ...this.queryString };
     const excludedFields = ['page', 'sort', 'limit', 'start', 'fields'];
+    // Define fields that are expected to be ObjectIds
+    const objectIdFields = ['ownerId', 'propertyId']; // Add more ObjectId field names as necessary
 
     // Removing fields not required for filtering
     excludedFields.forEach((el) => delete queryObj[el]);
+
+    // Convert fields that are supposed to be ObjectIds
+    objectIdFields.forEach((field) => {
+      if (queryObj[field]) {
+        // Convert to ObjectId using Mongoose's ObjectId type
+        queryObj[field] = mongoose.Types.ObjectId(queryObj[field]);
+      }
+    });
 
     // Advanced filtering with conversion of comparison operators
     let queryStr = JSON.stringify(queryObj);

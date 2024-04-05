@@ -18,15 +18,14 @@ const workspaceSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    property: {
+    propertyId: {
       type: Schema.Types.ObjectId,
       ref: 'Property',
       required: true,
     },
-    workspaceType: {
+    type: {
       type: String,
-      enum: ['room', 'onwer', 'admin'],
-      default: 'coworker',
+      enum: ['desk', 'meeting-room', 'private_office'],
       required: true,
     },
     price: Number,
@@ -40,30 +39,28 @@ const workspaceSchema = new mongoose.Schema(
         },
       },
     ],
-    leaseTermType: {
+    leaseTerm: {
       type: String,
-      enum: ['days', 'weeks', 'months'],
+      enum: ['day', 'week', 'month'],
       default: 'coworker',
       required: true,
     },
-    smokePolicy: {
+    isSmokingAllowed: {
       type: Boolean,
       default: false,
     },
-    seatingCapacity: {
+    places: {
       type: Number,
-      default: 1,
       required: true,
     },
     available: {
       type: Boolean,
       default: false,
     },
-    imageCover: {
+    image: {
       type: String,
       default: 'user-default.jpg',
     },
-    images: [String],
     createdAt: {
       type: Date,
       default: Date.now(),

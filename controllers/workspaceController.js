@@ -157,13 +157,8 @@ exports.rentWorkspace = catchAsync(async (req, res, next) => {
     return next(new AppError('Workspace not found', 404));
   }
 
-  const startDate = moment(req.body.start, 'YYYY-MM-DD');
-  const endDate = moment(startDate).add(
-    req.body.quantity,
-    workspace.leaseTermType,
-  );
-
-  const totalPrice = workspace.price * req.body.quantity;
+  const startDate = moment(req.body.startDate, 'YYYY-MM-DD');
+  const endDate = moment(req.body.endDate, 'YYYY-MM-DD');
 
   // Check if the endDate intersects with another bookedDate
   const intersectingDates = workspace.bookedDates.filter(
@@ -210,10 +205,11 @@ exports.rentWorkspace = catchAsync(async (req, res, next) => {
     data: {
       startDate,
       endDate,
-      totalPrice,
-      leaseTermType: workspace.leaseTermType,
-      seatingCapacity: workspace.seatingCapacity,
-      workspaceType: workspace.workspaceType,
+      name: workspace.name,
+      type: workspace.type,
+      price: workspace.price,
+      places: workspace.places,
+      leaseTerm: workspace.leaseTerm,
     },
   });
 });
