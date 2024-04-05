@@ -35,7 +35,7 @@ exports.uploadWorkspaceImage = upload.fields([
 ]);
 
 exports.resizeWorkspaceImages = async (req, res, next) => {
-  if (!req.files.imageCover || !req.files.images) return next();
+  if (!req.files || !req.files.imageCover || !req.files.images) return next();
 
   req.body.imageCover = `workspace-${req.params.id}-${Date.now()}-cover.jpeg`;
   await sharp(req.files.imageCover[0].buffer)

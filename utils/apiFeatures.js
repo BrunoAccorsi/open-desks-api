@@ -5,17 +5,19 @@ class APIFeatures {
   }
 
   filter() {
-    //filtering
+    // Copying the query string
     const queryObj = { ...this.queryString };
     const excludedFields = ['page', 'sort', 'limit', 'start', 'fields'];
+
+    // Removing fields not required for filtering
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    //advanced filtering
+    // Advanced filtering with conversion of comparison operators
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
+    // Using the modified query string for filtering
     this.query = this.query.find(JSON.parse(queryStr));
-
     return this;
   }
 

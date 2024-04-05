@@ -51,7 +51,7 @@ app.use(xss());
 //prevent http param pollution
 app.use(
   hpp({
-    whitelist: ['price'],
+    whitelist: ['onwerId'],
   }),
 );
 
