@@ -101,8 +101,10 @@ exports.getWorkspace = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: {
-      workspace,
-      unavailableDates,
+      workspace: {
+        ...workspace._doc,
+        unavailableDates,
+      },
     },
   });
 });
