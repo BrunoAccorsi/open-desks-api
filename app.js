@@ -17,7 +17,7 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 const corsOptions = {
-  origin: 'https://brunoaccorsi.github.io/opendesks/pages/', // Set to your front-end application's origin
+  origin: 'https://brunoaccorsi.github.io/', // Set to your front-end application's origin
   credentials: true, // Needed for cookies
 };
 app.use(cors(corsOptions));
