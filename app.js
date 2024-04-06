@@ -17,7 +17,7 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 const corsOptions = {
-  origin: 'http://127.0.0.1:5500', // Set to your front-end application's origin
+  // origin: 'http://127.0.0.1:5500', // Set to your front-end application's origin
   credentials: true, // Needed for cookies
 };
 app.use(cors(corsOptions));
