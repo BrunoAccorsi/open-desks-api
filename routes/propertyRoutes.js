@@ -6,7 +6,7 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(authController.protect, propertyController.getAllProperties)
+  .get(propertyController.getAllProperties)
   .post(propertyController.createProperty);
 router
   .route('/:id')
