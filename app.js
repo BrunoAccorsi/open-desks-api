@@ -16,6 +16,9 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
+// The simplest way to indicate that Express should trust the proxy is by setting 'trust proxy' to true
+app.set('trust proxy', true);
+
 const corsOptions = {
   origin: 'https://brunoaccorsi.github.io/', // Set to your front-end application's origin
   credentials: true, // Needed for cookies
