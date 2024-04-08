@@ -20,7 +20,10 @@ const app = express();
 app.set('trust proxy', true);
 
 const corsOptions = {
-  origin: 'https://brunoaccorsi.github.io', // Set to your front-end application's origin
+  origin:
+    process.env.NODE_ENV === 'development'
+      ? '*'
+      : 'https://brunoaccorsi.github.io',
   credentials: true, // Needed for cookies
 };
 app.use(cors(corsOptions));
