@@ -212,6 +212,7 @@ exports.rentWorkspace = catchAsync(async (req, res, next) => {
       price: workspace.price,
       places: workspace.places,
       leaseTerm: workspace.leaseTerm,
+      image: workspace.image,
     },
   });
 });
