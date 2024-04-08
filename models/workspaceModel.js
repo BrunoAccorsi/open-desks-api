@@ -11,7 +11,7 @@ const workspaceSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       maxLength: [40, 'A workspace name cannot be more than 40 characters'],
-      minLength: [10, 'A workspace name cannot be less than 10 characters'],
+      minLength: [5, 'A workspace name cannot be less than 5 characters'],
     },
     ownerId: {
       type: Schema.Types.ObjectId,
