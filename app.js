@@ -23,7 +23,7 @@ const corsOptions = {
   origin:
     process.env.NODE_ENV === 'development'
       ? '*'
-      : 'https://brunoaccorsi.github.io',
+      : ['https://brunoaccorsi.github.io', 'https://manufflopes.github.io'],
   credentials: true, // Needed for cookies
 };
 app.use(cors(corsOptions));
