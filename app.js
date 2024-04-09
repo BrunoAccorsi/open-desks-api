@@ -22,7 +22,7 @@ app.set('trust proxy', true);
 const corsOptions = {
   origin:
     process.env.NODE_ENV === 'development'
-      ? '*'
+      ? 'http://127.0.0.1:5500'
       : ['https://brunoaccorsi.github.io', 'https://manufflopes.github.io'],
   credentials: true, // Needed for cookies
 };
