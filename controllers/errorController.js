@@ -14,6 +14,7 @@ const handleDuplicateFieldsDB = (err) => {
 };
 
 const handleValidationErrorDB = (err) => {
+  console.log('🚫🚫🚫🚫');
   const errors = Object.values(err.errors).map((el) => el.message);
   const message = `Invalid input data. ${errors.join('. ')}`;
 
@@ -56,14 +57,16 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let error = { ...err, message: err.message };
+    let error = { ...err };
+    error.message = err.message;
+    error.name = err.name;
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-    if (error.name === 'ValidatorError') error = handleValidationErrorDB(error);
+    if (error.name === 'ValidationError')
+      error = handleValidationErrorDB(error);
     if (error.name === 'JsonWebTokenError') error = handleJWTerror();
     if (error.name === 'TokenExpiredError') error = handleTokenExpired();
-
     sendErrorProduction(error, res);
   }
 };
