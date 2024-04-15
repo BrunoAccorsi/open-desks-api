@@ -6,11 +6,11 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(authController.protect, workspaceController.getAllWorkspaces)
+  .get(workspaceController.getAllWorkspaces)
   .post(authController.protect, workspaceController.createWorkspace);
 router
   .route('/:id')
-  .get(authController.protect, workspaceController.getWorkspace)
+  .get(workspaceController.getWorkspace)
   .patch(
     authController.protect,
     workspaceController.uploadWorkspaceImage,
